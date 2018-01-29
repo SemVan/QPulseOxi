@@ -27,7 +27,6 @@ private:
     KeepNcalc *container;
     int MESSAGE_LENGTH;
     QByteArray command;
-    double fromBytesToDouble(QByteArray data);
     QSerialPort *portUSB;
     QByteArray totalIncome;
     int maxBufferSize;

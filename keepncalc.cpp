@@ -2,8 +2,6 @@
 #include <QObject>
 #include <fftw3.h>
 #include <math.h>
-#include <fir_hamming.h>
-#include <fir_tuk74.h>
 #include <QtConcurrent/QtConcurrent>
 
 KeepNcalc::KeepNcalc(QObject *parent) : QObject(parent)

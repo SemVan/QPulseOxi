@@ -30,24 +30,27 @@ void protocol::init(QSerialPort *y, int length, QString name) {
  */
 void protocol::getData()
 {
-
-    if((portUSB->isOpen())&&(portUSB->bytesAvailable()>0)) {
-        int quan=portUSB->bytesAvailable();
-        unsigned char incomeChar[quan];
-        portUSB->read((char*)incomeChar,quan);
+    int quan=portUSB->bytesAvailable();
+    if((portUSB->isOpen())&&(quan>0)) {
+        //int quan=portUSB->bytesAvailable();
+        //unsigned char incomeChar[quan];
+        char *incomeChar = new char[quan];
+        portUSB->read(incomeChar,quan);
 
         int freeSpaceInBuffer=256-totalIncome.size();
 
         if (freeSpaceInBuffer>=quan) {
-            totalIncome.append((char*)incomeChar,quan);
+            totalIncome.append(incomeChar,quan);
         } else {
-            totalIncome.append((char*)incomeChar,freeSpaceInBuffer);
+            totalIncome.append(incomeChar,freeSpaceInBuffer);
         }
 
     }
 
-    if (totalIncome.at(totalIncome.size()-1)!=13) {
-        return;
+    if (totalIncome.size()<0) {
+        if (totalIncome.at(totalIncome.size()-1)!=13) {
+            return;
+        }
     }
 
     parceAnswer(totalIncome);
@@ -78,22 +81,6 @@ void protocol::parceAnswer(QByteArray answer) {
 }
 
 
-double protocol::fromBytesToDouble(QByteArray data) {
-    int h = (int)data.at(1);
-    if (h < 0) {
-        h = h+255;
-    }
-    int l = (int)data.at(0);
-    if (l < 0) {
-        l = l+255;
-    }
-
-    int Bytes = l << 8 | h;
-
-    double temperature = (float) Bytes / 256;
-    sendMeasResult(temperature, temperature);
-    return temperature;
-}
 
 
 /*!
@@ -110,7 +97,7 @@ void protocol::sendRequest() {
 void protocol::start() {
     elTimer = new QElapsedTimer();
     timer = new QTimer();
-    timer->setInterval(10);
+    timer->setInterval(3);
     timer->setTimerType(Qt::PreciseTimer);
     timer->setSingleShot(false);
 
