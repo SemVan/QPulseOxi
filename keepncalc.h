@@ -13,6 +13,7 @@ class KeepNcalc : public QObject
 public:
     explicit KeepNcalc(QObject *parent = 0);
     void init(QCustomPlot* chart, int number);
+
     QVector<double> greenChannel;
     QVector<double> blueChannel;
     QVector<double> time;
@@ -37,6 +38,7 @@ signals:
 
 public slots:
     void addNewData(double green, double blue);
+
 };
 
 #endif // KEEPNCALC_H

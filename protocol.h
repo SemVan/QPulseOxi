@@ -21,6 +21,7 @@ signals:
 
 
 private:
+    int number;
     QString devName;
     QTimer *timer;
     QElapsedTimer *elTimer;

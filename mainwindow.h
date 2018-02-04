@@ -9,6 +9,9 @@
 #include <fftw3.h>
 #include <fstream>
 #include <keepncalc.h>
+#include <cameratool.h>
+#include <displayer.h>
+#include <imageprocessor.h>
 #include <QThread>
 
 
@@ -28,11 +31,15 @@ public:
 
 private slots:
     void on_pushButton_clicked();
+    void sliderValueChanged(int value);
 
 
 private:
     QThread *device1thread;
     QThread *device2thread;
+    QThread *cameraThread;
+    QThread *procThread;
+
     std::ofstream file;
     int fftSize;
 
@@ -47,7 +54,16 @@ private:
     protocol *distMeas;
     QSerialPort *portToConnect;
     QSerialPort *portToConnect_2;
-    void connectToPort(QSerialPort *port, QComboBox *box,protocol* device, int length, QString name);
+    ImageProcessor *proc;
+    CameraTool *tool;
+    displayer *disp;
+
+    KeepNcalc *contactContainer;
+    KeepNcalc *bezcontactContainer;
+
+
+    void createAllObjects();
+    void connectToPort(QSerialPort *port, QComboBox *box,protocol* device, int length, QString name, KeepNcalc *container);
     void connectDeviceToThread(QThread *thr, protocol *device);
 
     fftw_complex *out;

@@ -3,6 +3,7 @@
 #include <fftw3.h>
 #include <math.h>
 #include <QtConcurrent/QtConcurrent>
+#include <QDebug>
 
 KeepNcalc::KeepNcalc(QObject *parent) : QObject(parent)
 {
@@ -19,17 +20,19 @@ void KeepNcalc::init(QCustomPlot *chart, int number) {
 }
 
 void KeepNcalc::addNewData(double green, double blue) {
+    qDebug()<<numberOfElements<<"got from receiver";
     blueChannel.append(blue);
     greenChannel.append(green);
     time.append(numberOfElements);
     //QFuture<void> future = QtConcurrent::run(this,&KeepNcalc::plotGraph,numberOfElements, blue);
+    plotGraph(numberOfElements, green);
     numberOfElements++;
 }
 
 
 void KeepNcalc::plotGraph(double x, double y) {
     plot->graph(graphNum)->addData(x, y);
-    plot->replot( QCustomPlot::rpQueuedRefresh);
+    plot->replot( );
 }
 
 

@@ -17,8 +17,10 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
     ui->statusBar->show();
+    createAllObjects();
     initGraphsAndDataContents();
     initComPortsSearch();
+
 
 }
 
@@ -45,14 +47,9 @@ void MainWindow::writeFIle(QVector<double> signal, QString fileName) {
  */
 void MainWindow::initGraphsAndDataContents() {
 
-    ui->progressBar->setTextVisible(false);
 
     ui->widget->addGraph();//for blue channel
-    ui->widget->graph(0)->setName("Blue channel");
     ui->widget->graph(0)->setPen(QPen(QColor(0,0,255)));
-    ui->widget->addGraph();//for green channel
-    ui->widget->graph(1)->setName("Red channel");
-    ui->widget->graph(1)->setPen(QPen(QColor(0,255,0)));
     ui->widget->setInteraction(QCP::iRangeZoom,true);
     ui->widget->setInteraction(QCP::iRangeDrag,true);
     ui->widget->yAxis->setRange(500, 550);
@@ -62,14 +59,12 @@ void MainWindow::initGraphsAndDataContents() {
     ui->widget_2->setInteraction(QCP::iRangeZoom,true);
     ui->widget_2->setInteraction(QCP::iRangeDrag,true);
 
-    ui->widget->legend->setFont(QFont());
-    ui->widget->legend->setBrush(QBrush(QColor(255,255,255,230)));
-   // ui->widget->legend->setVisible(true);
 
     ui->widget->xAxis->setLabel("Signal count");
     ui->widget->yAxis->setLabel("ADC count");
 
-    ui->widget_2->xAxis->setLabel("Frequency, Hz");
+    ui->widget_2->xAxis->setLabel("Signal count");
+    ui->widget_2->yAxis->setLabel("ADC count");
 
     ui->widget_2->addGraph();
     ui->widget_2->yAxis->setRange(500, 550);
@@ -77,19 +72,35 @@ void MainWindow::initGraphsAndDataContents() {
 
     fftSize=4096;
 
-    ui->progressBar->setMaximum(fftSize);
-    ui->progressBar->setValue(0);
+    ui->horizontalSlider->setMaximum(-1);
+    ui->horizontalSlider->setMinimum(-15);
+    QObject::connect(ui->horizontalSlider, SIGNAL(valueChanged(int)), this, SLOT(sliderValueChanged(int)));
+    ui->horizontalSlider->setValue(-6);
+    tool->setExposure(-6);
 
-//    contactContainer=new KeepNcalc();
-//    contactContainer->init(ui->widget,0);
-//    bezcontactContainer=new KeepNcalc();
-//    bezcontactContainer->init(ui->widget_2,0);
+    contactContainer=new KeepNcalc();
+    contactContainer->init(ui->widget,0);
+    bezcontactContainer=new KeepNcalc();
+    bezcontactContainer->init(ui->widget_2,0);
 
 
 
 }
 
 
+
+void MainWindow::createAllObjects() {
+    tool = new CameraTool();
+    tool->startCamera();
+
+    disp = new displayer();
+    disp->init(ui->graphicsView);
+
+    proc = new ImageProcessor();
+
+    qRegisterMetaType<cv::Mat>("cv::Mat");
+
+}
 
 /*!
  * \brief MainWindow::initComPortsSearch Looks for available COM-ports and puts them in combo-box
@@ -114,22 +125,40 @@ void MainWindow::initComPortsSearch() {
 void MainWindow::on_pushButton_clicked()
 {
     pulseOxi = new protocol("m");
-    connectToPort(portToConnect,ui->comboBox, pulseOxi, 7, "1pulse");
+    connectToPort(portToConnect,ui->comboBox, pulseOxi, 7, "1pulse", contactContainer);
     device1thread = new QThread();
     connectDeviceToThread(device1thread, pulseOxi);
 
     distMeas = new protocol("\r");
-    connectToPort(portToConnect_2,ui->comboBox_2, distMeas, 7,"2pulse");
+    connectToPort(portToConnect_2,ui->comboBox_2, distMeas, 7,"2pulse", bezcontactContainer);
     device2thread = new QThread();
     connectDeviceToThread(device2thread, distMeas);
 
+    cameraThread = new QThread();
+    QObject::connect(cameraThread, SIGNAL(started()), tool, SLOT(start()));
+    //QObject::connect(cameraThread, SIGNAL(finished()), tool, SLOT(stop()));
+
+
+    procThread = new QThread();
+    QObject::connect(procThread, SIGNAL(started()), proc, SLOT(start()));
+
+
+
+    QObject::connect(tool, SIGNAL(sendMat(cv::Mat)),proc,SLOT(fullOneFrameProcess(cv::Mat)));
+    QObject::connect(proc, SIGNAL(sendImage(QImage&)),disp,SLOT(showImage(QImage&)), Qt::BlockingQueuedConnection);
+
+
+    tool->moveToThread(cameraThread);
+    proc->moveToThread(procThread);
+    procThread->start();
+    cameraThread->start();
     device1thread->start();
     device2thread->start();
 
 }
 
 
-void MainWindow::connectToPort(QSerialPort *port, QComboBox *box, protocol *device, int length, QString name) {
+void MainWindow::connectToPort(QSerialPort *port, QComboBox *box, protocol *device, int length, QString name, KeepNcalc *container) {
     int number=box->currentIndex();
     port->setPort(QSerialPortInfo::availablePorts().at(number));
 
@@ -140,6 +169,7 @@ void MainWindow::connectToPort(QSerialPort *port, QComboBox *box, protocol *devi
 
     } else {
         device->init(port, length, name);
+        QObject::connect(device, SIGNAL(sendMeasResult(double,double)), container, SLOT(addNewData(double,double)));
     }
 }
 
@@ -150,3 +180,7 @@ void MainWindow::connectDeviceToThread(QThread *thr, protocol *device) {
     device->moveToThread(thr);
 }
 
+void MainWindow::sliderValueChanged(int value) {
+    ui->label->setText(QString::number(value));
+    tool->setExposure((double)value);
+}

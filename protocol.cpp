@@ -7,11 +7,11 @@ protocol::protocol(std::string mes)
     command = QByteArray::fromStdString(mes);
     maxBufferSize=1024;
     totalIncome.clear();
-    container = new KeepNcalc();
 }
 
 void protocol::init(QSerialPort *y, int length, QString name) {
 
+    number = 0;
     devName = name;
     MESSAGE_LENGTH = length;
     portUSB=y;
@@ -47,14 +47,14 @@ void protocol::getData()
 
     }
 
-    if (totalIncome.size()<0) {
-        if (totalIncome.at(totalIncome.size()-1)!=13) {
-            return;
+    if (totalIncome.size()>0) {
+        if (totalIncome.at(totalIncome.size()-1)==13) {
+            parceAnswer(totalIncome);
+            totalIncome.clear();
         }
+
     }
 
-    parceAnswer(totalIncome);
-    totalIncome.clear();
 }
 
 /*!
@@ -74,10 +74,16 @@ void protocol::parceAnswer(QByteArray answer) {
         int resultGreen=green.toInt(&okGreen,16);
 
         if (okBlue && okGreen) {
-            container->addNewData(resultGreen, resultBlue);
+            qDebug()<<number<<"got from device";
+            number++;
+            sendMeasResult((double)resultBlue, (double)resultGreen);
+        } else {
+            qDebug() <<"smth wrong with answer";
         }
 
-    }
+    } else {
+         qDebug()<<"smth wrong with length";
+     }
 }
 
 
@@ -97,7 +103,7 @@ void protocol::sendRequest() {
 void protocol::start() {
     elTimer = new QElapsedTimer();
     timer = new QTimer();
-    timer->setInterval(3);
+    timer->setInterval(40);
     timer->setTimerType(Qt::PreciseTimer);
     timer->setSingleShot(false);
 
