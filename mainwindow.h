@@ -13,7 +13,7 @@
 #include <displayer.h>
 #include <imageprocessor.h>
 #include <QThread>
-
+#include <QDateTime>
 
 
 
@@ -32,9 +32,11 @@ public:
 private slots:
     void on_pushButton_clicked();
     void sliderValueChanged(int value);
+    void someoneCompletedMeasuring();
 
 
 private:
+    QDateTime thisTime;
     QThread *device1thread;
     QThread *device2thread;
     QThread *cameraThread;
@@ -76,6 +78,8 @@ private:
     double *in;
     int currentItemNumberBlue;
     int currentItemNumberGreen;
+signals:
+    void heyYouFreeze();
 
 };
 

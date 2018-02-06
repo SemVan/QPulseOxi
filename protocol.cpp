@@ -76,7 +76,7 @@ void protocol::parceAnswer(QByteArray answer) {
         if (okBlue && okGreen) {
             qDebug()<<number<<"got from device";
             number++;
-            sendMeasResult((double)resultBlue, (double)resultGreen);
+            sendMeasResult((double)resultBlue, (double)resultGreen, shotTime);
         } else {
             qDebug() <<"smth wrong with answer";
         }
@@ -96,6 +96,7 @@ void protocol::sendRequest() {
     if (portUSB->isOpen()) {
         qDebug()<<devName<<elTimer->nsecsElapsed();
         elTimer->restart();
+        shotTime = QDateTime::currentDateTime();
         portUSB->write(command);
     }
 }
@@ -103,7 +104,7 @@ void protocol::sendRequest() {
 void protocol::start() {
     elTimer = new QElapsedTimer();
     timer = new QTimer();
-    timer->setInterval(40);
+    timer->setInterval(20);
     timer->setTimerType(Qt::PreciseTimer);
     timer->setSingleShot(false);
 

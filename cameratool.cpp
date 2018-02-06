@@ -30,8 +30,9 @@ void CameraTool::convertMatToImage(cv::Mat &frame) {
 
 
 void CameraTool::getImage() {
+    timeShot = QDateTime::currentDateTime();
     cam.read(img);
-    sendMat(img);
+    sendMat(img, timeShot);
 
 }
 
@@ -50,7 +51,7 @@ void CameraTool::timeOutHandler() {
 void CameraTool::start() {
     timer = new QTimer();
     QObject::connect(timer,SIGNAL(timeout()), this, SLOT(timeOutHandler()));
-    timer->setInterval(40);
+    timer->setInterval(20);
     timer->setSingleShot(false);
     timer->setTimerType(Qt::PreciseTimer);
     timer->start();

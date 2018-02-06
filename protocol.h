@@ -17,10 +17,11 @@ public:
     void refreshFile();
 
 signals:
-    void sendMeasResult(double blChRes,double grChRes);
+    void sendMeasResult(double blChRes,double grChRes, QDateTime time);
 
 
 private:
+    QDateTime shotTime;
     int number;
     QString devName;
     QTimer *timer;

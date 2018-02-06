@@ -16,7 +16,8 @@ void ImageProcessor::init(KeepNcalc *cont) {
 }
 
 
-void ImageProcessor::fullOneFrameProcess(cv::Mat frame) {
+void ImageProcessor::fullOneFrameProcess(cv::Mat frame, QDateTime time) {
+    shotTime = time;
     detectFace(frame);
 }
 
@@ -119,7 +120,7 @@ cv::Mat ImageProcessor::filterSkinMask(cv::Mat& mask) {
 
 void ImageProcessor::calculateAverage(cv::Mat& frame) {
     cv::Scalar means = cv::mean(frame);
-    sendMeasResult(means[0], means[1],means[2]);
+    sendMeasResult(means[0], means[1],means[2], shotTime);
 
 }
 

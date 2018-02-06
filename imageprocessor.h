@@ -10,6 +10,8 @@
 #include <QVector>
 #include <QObject>
 #include <keepncalc.h>
+#include <QDateTime>
+
 
 class ImageProcessor: public QObject
 {
@@ -23,16 +25,17 @@ public:
 
 
 public slots:
-    void fullOneFrameProcess(cv::Mat frame);
+    void fullOneFrameProcess(cv::Mat frame, QDateTime time);
 
 
 signals:
     void faceIsReade(cv::Mat face);
     void sendImage(QImage &image);
     void numberIsReady(double intence);
-    void sendMeasResult(double red, double blue, double green);
+    void sendMeasResult(double red, double blue, double green, QDateTime time);
 
 private:
+    QDateTime shotTime;
     int face_x;
     int face_y;
     int face_r;

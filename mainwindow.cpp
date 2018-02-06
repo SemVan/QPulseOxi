@@ -9,6 +9,7 @@
 #include <QFile>
 
 
+
 const double pi = 3.14;
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -20,8 +21,9 @@ MainWindow::MainWindow(QWidget *parent) :
     createAllObjects();
     initGraphsAndDataContents();
     initComPortsSearch();
-
-
+    QString newDir = QDir::currentPath()+ui->lineEdit->text();
+    qDebug()<<newDir;
+    //QDir().mkdir(newDir);
 
 }
 
@@ -62,11 +64,14 @@ void MainWindow::initGraphsAndDataContents() {
     tool->setExposure(-6);
 
     contactContainer=new KeepNcalc();
-    contactContainer->init(ui->widget,0);
+    contactContainer->init(ui->widget,0, "Contact");
+    QObject::connect(contactContainer, SIGNAL(completedMeasuring()), this, SLOT(someoneCompletedMeasuring()));
     bezcontactContainer=new KeepNcalc();
-    bezcontactContainer->init(ui->widget_2,0);
+    bezcontactContainer->init(ui->widget_2,0, "Contactless");
+    QObject::connect(bezcontactContainer, SIGNAL(completedMeasuring()), this, SLOT(someoneCompletedMeasuring()));
     cameraContainer = new KeepNcalc();
-    cameraContainer->init(ui->widget_3, 0);
+    cameraContainer->init(ui->widget_3, 0, "Video");
+    QObject::connect(cameraContainer, SIGNAL(completedMeasuring()), this, SLOT(someoneCompletedMeasuring()));
 
 
 
@@ -140,9 +145,10 @@ void MainWindow::initDevices() {
     proc->moveToThread(procThread);
 
     QObject::connect(cameraThread, SIGNAL(started()), tool, SLOT(start()));
-    QObject::connect(tool, SIGNAL(sendMat(cv::Mat)),proc,SLOT(fullOneFrameProcess(cv::Mat)));
+    QObject::connect(tool, SIGNAL(sendMat(cv::Mat, QDateTime)),proc,SLOT(fullOneFrameProcess(cv::Mat, QDateTime)));
+    QObject::connect(this, SIGNAL(heyYouFreeze()), tool,SLOT(stop()));
     QObject::connect(proc, SIGNAL(sendImage(QImage&)),disp,SLOT(showImage(QImage&)), Qt::BlockingQueuedConnection);
-    QObject::connect(proc, SIGNAL(sendMeasResult(double,double,double)), cameraContainer, SLOT(addNewData(double,double,double)));
+    QObject::connect(proc, SIGNAL(sendMeasResult(double, double, double, QDateTime)), cameraContainer, SLOT(addNewData(double, double, double, QDateTime)));
 }
 
 void MainWindow::createThreads() {
@@ -175,7 +181,8 @@ void MainWindow::connectToPort(QSerialPort *port, QComboBox *box, protocol *devi
 
     } else {
         device->init(port, length, name);
-        QObject::connect(device, SIGNAL(sendMeasResult(double,double)), container, SLOT(addNewData(double,double)));
+        QObject::connect(device, SIGNAL(sendMeasResult(double, double, QDateTime)), container, SLOT(addNewData(double, double, QDateTime)));
+        QObject::connect(this, SIGNAL(heyYouFreeze()), device,SLOT(stop()));
     }
 }
 
@@ -190,3 +197,25 @@ void MainWindow::sliderValueChanged(int value) {
     ui->label->setText(QString::number(value));
     tool->setExposure((double)value);
 }
+
+void MainWindow::someoneCompletedMeasuring() {
+    if (contactContainer->measurementComplete && bezcontactContainer->measurementComplete && cameraContainer->measurementComplete) {
+        heyYouFreeze();
+
+        QString newDir = QDir::currentPath()+"\\"+ui->lineEdit->text();
+        qDebug()<<newDir;
+        QDir().mkdir(newDir);
+
+        contactContainer->write1Channels(newDir);
+        contactContainer->clerContainers();
+
+        bezcontactContainer->write1Channels(newDir);
+        bezcontactContainer->clerContainers();
+
+        cameraContainer->write3Channels(newDir);
+        cameraContainer->clerContainers();
+
+    }
+}
+
+

@@ -5,6 +5,7 @@
 #include <QObject>
 #include <fftw3.h>
 #include <qcustomplot.h>
+#include <QDateTime>
 
 
 class KeepNcalc : public QObject
@@ -12,35 +13,34 @@ class KeepNcalc : public QObject
     Q_OBJECT
 public:
     explicit KeepNcalc(QObject *parent = 0);
-    void init(QCustomPlot* chart, int number);
+    void init(QCustomPlot* chart, int number, QString name);
+    void clerContainers();
+    void plotGraph(double x, double y);
+    bool measurementComplete;
+    void write1Channels(QString filepath);
+    void write3Channels(QString filepath);
 
+private:
+    QString containerName;
+    QCustomPlot *plot;
+    int graphNum;
     QVector<double> greenChannel;
     QVector<double> blueChannel;
     QVector<double> redChannel;
     QVector<double> time;
-    QVector<double> filTime;
+    QVector<QDateTime> times;
     double max;
     double min;
     int numberOfElements;
 
-    QVector<double> FftresultY;
-    QVector<double> FftresultX;
 
-    double findHeartRate();
-
-    void clerContainers();
-    void plotGraph(double x, double y);
-
-private:
-
-    QCustomPlot *plot;
-    int graphNum;
 
 signals:
+    void completedMeasuring();
 
 public slots:
-    void addNewData(double green, double blue);
-    void addNewData(double green, double blue, double red);
+    void addNewData(double green, double blue, QDateTime shotTime);
+    void addNewData(double green, double blue, double red, QDateTime shotTime);
 
 };
 

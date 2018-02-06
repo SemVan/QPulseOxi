@@ -19,7 +19,7 @@
      <rect>
       <x>10</x>
       <y>240</y>
-      <width>651</width>
+      <width>671</width>
       <height>201</height>
      </rect>
     </property>
@@ -52,7 +52,7 @@
      <rect>
       <x>10</x>
       <y>450</y>
-      <width>651</width>
+      <width>671</width>
       <height>191</height>
      </rect>
     </property>
@@ -70,10 +70,10 @@
    <widget class="QGraphicsView" name="graphicsView">
     <property name="geometry">
      <rect>
-      <x>50</x>
-      <y>40</y>
-      <width>161</width>
-      <height>141</height>
+      <x>20</x>
+      <y>10</y>
+      <width>231</width>
+      <height>201</height>
      </rect>
     </property>
    </widget>
@@ -111,6 +111,29 @@
     </property>
     <property name="text">
      <string>TextLabel</string>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="lineEdit">
+    <property name="geometry">
+     <rect>
+      <x>740</x>
+      <y>120</y>
+      <width>181</width>
+      <height>21</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="pushButton_2">
+    <property name="geometry">
+     <rect>
+      <x>740</x>
+      <y>150</y>
+      <width>80</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Start</string>
     </property>
    </widget>
   </widget>

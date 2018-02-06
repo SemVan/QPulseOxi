@@ -8,6 +8,7 @@
 #include "opencv2/objdetect/objdetect.hpp"
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
+#include <QDateTime>
 
 
 class CameraTool : public QObject
@@ -24,6 +25,7 @@ public:
 
 
 private:
+    QDateTime timeShot;
     cv::VideoCapture cam;
     cv::Mat img;
     QTimer *timer;
@@ -32,7 +34,7 @@ private:
 
 signals:
     void sendImage(QImage &image);
-    void sendMat(cv::Mat image);
+    void sendMat(cv::Mat image, QDateTime time);
 
 private slots:
     void timeOutHandler();
