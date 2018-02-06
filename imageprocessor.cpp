@@ -7,9 +7,12 @@
 
 ImageProcessor::ImageProcessor()
 {
-    isface = 0;
     faceHaarCascade.load("C:///Coding///Cascades//haarcascade_frontalface_alt.xml");
 
+}
+
+void ImageProcessor::init(KeepNcalc *cont) {
+    container = cont;
 }
 
 
@@ -18,14 +21,13 @@ void ImageProcessor::fullOneFrameProcess(cv::Mat frame) {
 }
 
 void ImageProcessor::detectFace(cv::Mat &frame) {
-    calculateAverage(frame);
+
     QElapsedTimer elTimer;
     elTimer.start();
     cv::Mat face;
     std::vector<cv::Rect> faces;
 
     if (faceHaarCascade.empty()) {
-        isface=0;
         return;
     }
 
@@ -37,6 +39,7 @@ void ImageProcessor::detectFace(cv::Mat &frame) {
         face_r = faces[0].width;
         face = frame(faces[0]);
         face = findSkinRegions(face);
+        calculateAverage(face);
         cv::Point center( faces[0].x + faces[0].width*0.5, faces[0].y + faces[0].height*0.5 );
         cv::ellipse( frame, center, cv::Size( faces[0].width*0.5, faces[0].height*0.5), 0, 0, 360, cv::Scalar( 255, 0, 255 ), 4, 8, 0 );
      } else {
@@ -114,13 +117,9 @@ cv::Mat ImageProcessor::filterSkinMask(cv::Mat& mask) {
     return newMask;
 }
 
-QVector<double> ImageProcessor::calculateAverage(cv::Mat& frame) {
+void ImageProcessor::calculateAverage(cv::Mat& frame) {
     cv::Scalar means = cv::mean(frame);
-    QVector<double> results;
-    results.append(means[0]);
-    results.append(means[1]);
-    results.append(means[2]);
-    return results;
+    sendMeasResult(means[0], means[1],means[2]);
 
 }
 

@@ -9,6 +9,7 @@
 #include "opencv2/objdetect/objdetect.hpp"
 #include <QVector>
 #include <QObject>
+#include <keepncalc.h>
 
 class ImageProcessor: public QObject
 {
@@ -16,12 +17,10 @@ class ImageProcessor: public QObject
 
 public:
     ImageProcessor();
-    QVector<double> plety;
+    void init(KeepNcalc *cont);
     cv::Mat findSkinRegions(cv::Mat& frame);
-    bool isface;
-    int face_x;
-    int face_y;
-    int face_r;
+
+
 
 public slots:
     void fullOneFrameProcess(cv::Mat frame);
@@ -31,16 +30,20 @@ signals:
     void faceIsReade(cv::Mat face);
     void sendImage(QImage &image);
     void numberIsReady(double intence);
+    void sendMeasResult(double red, double blue, double green);
 
 private:
-   // cv::VideoCapture camera;
+    int face_x;
+    int face_y;
+    int face_r;
+    KeepNcalc *container;
     cv::CascadeClassifier faceHaarCascade;
 
 
     void detectFace(cv::Mat &frame);
 
     cv::Mat filterSkinMask(cv::Mat& mask);
-    QVector<double> calculateAverage(cv::Mat& frame);
+    void calculateAverage(cv::Mat& frame);
     void convertMatToImage(cv::Mat &frame);
 
 

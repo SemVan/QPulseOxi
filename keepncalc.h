@@ -16,9 +16,11 @@ public:
 
     QVector<double> greenChannel;
     QVector<double> blueChannel;
+    QVector<double> redChannel;
     QVector<double> time;
     QVector<double> filTime;
-
+    double max;
+    double min;
     int numberOfElements;
 
     QVector<double> FftresultY;
@@ -38,6 +40,7 @@ signals:
 
 public slots:
     void addNewData(double green, double blue);
+    void addNewData(double green, double blue, double red);
 
 };
 

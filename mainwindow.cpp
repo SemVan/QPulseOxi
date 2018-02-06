@@ -22,6 +22,7 @@ MainWindow::MainWindow(QWidget *parent) :
     initComPortsSearch();
 
 
+
 }
 
 MainWindow::~MainWindow()
@@ -42,35 +43,17 @@ void MainWindow::writeFIle(QVector<double> signal, QString fileName) {
         file.close();
 }
 
+
 /*!
  * \brief MainWindow::initGraphsAndDataContents Creates graphs on the plotting widget, inits QVectors to contain measurement results
  */
 void MainWindow::initGraphsAndDataContents() {
+    signalSize = 4096;
 
+    setGraphParams(ui->widget, "Signal count", "ADC counts", "Contact pletysmograph");
+    setGraphParams(ui->widget_2, "Signal count", "ADC counts", "Contactless pletysmograph");
+    setGraphParams(ui->widget_3, "Signal count", "ADC counts", "Video pletysmograph");
 
-    ui->widget->addGraph();//for blue channel
-    ui->widget->graph(0)->setPen(QPen(QColor(0,0,255)));
-    ui->widget->setInteraction(QCP::iRangeZoom,true);
-    ui->widget->setInteraction(QCP::iRangeDrag,true);
-    ui->widget->yAxis->setRange(500, 550);
-    ui->widget->xAxis->setRange(0, 1000);
-
-
-    ui->widget_2->setInteraction(QCP::iRangeZoom,true);
-    ui->widget_2->setInteraction(QCP::iRangeDrag,true);
-
-
-    ui->widget->xAxis->setLabel("Signal count");
-    ui->widget->yAxis->setLabel("ADC count");
-
-    ui->widget_2->xAxis->setLabel("Signal count");
-    ui->widget_2->yAxis->setLabel("ADC count");
-
-    ui->widget_2->addGraph();
-    ui->widget_2->yAxis->setRange(500, 550);
-    ui->widget_2->xAxis->setRange(0, 1000);
-
-    fftSize=4096;
 
     ui->horizontalSlider->setMaximum(-1);
     ui->horizontalSlider->setMinimum(-15);
@@ -82,12 +65,26 @@ void MainWindow::initGraphsAndDataContents() {
     contactContainer->init(ui->widget,0);
     bezcontactContainer=new KeepNcalc();
     bezcontactContainer->init(ui->widget_2,0);
+    cameraContainer = new KeepNcalc();
+    cameraContainer->init(ui->widget_3, 0);
 
 
 
 }
 
+void MainWindow::setGraphParams(QCustomPlot *chart, QString xName, QString yName, QString title) {
+    chart->axisRect()->insetLayout()->setInsetAlignment(0, Qt::AlignBottom|Qt::AlignRight);
+    chart->addGraph();
+    chart->graph(0)->setPen(QPen(QColor(0,0,255)));
+    chart->setInteraction(QCP::iRangeZoom,true);
+    chart->setInteraction(QCP::iRangeDrag,true);
+    chart->xAxis->setLabel(xName);
+    chart->yAxis->setLabel(yName);
+    chart->xAxis->setRange(0, 1000);
+    chart->plotLayout()->insertRow(0);
+    chart->plotLayout()->addElement(0, 0, new QCPTextElement(chart, title, QFont("sans", 8, QFont::Bold)));
 
+}
 
 void MainWindow::createAllObjects() {
     tool = new CameraTool();
@@ -124,39 +121,48 @@ void MainWindow::initComPortsSearch() {
 
 void MainWindow::on_pushButton_clicked()
 {
+    createThreads();
+    initDevices();
+    startMeasurement();
+
+}
+
+void MainWindow::initDevices() {
     pulseOxi = new protocol("m");
     connectToPort(portToConnect,ui->comboBox, pulseOxi, 7, "1pulse", contactContainer);
-    device1thread = new QThread();
     connectDeviceToThread(device1thread, pulseOxi);
 
     distMeas = new protocol("\r");
     connectToPort(portToConnect_2,ui->comboBox_2, distMeas, 7,"2pulse", bezcontactContainer);
-    device2thread = new QThread();
     connectDeviceToThread(device2thread, distMeas);
-
-    cameraThread = new QThread();
-    QObject::connect(cameraThread, SIGNAL(started()), tool, SLOT(start()));
-    //QObject::connect(cameraThread, SIGNAL(finished()), tool, SLOT(stop()));
-
-
-    procThread = new QThread();
-    QObject::connect(procThread, SIGNAL(started()), proc, SLOT(start()));
-
-
-
-    QObject::connect(tool, SIGNAL(sendMat(cv::Mat)),proc,SLOT(fullOneFrameProcess(cv::Mat)));
-    QObject::connect(proc, SIGNAL(sendImage(QImage&)),disp,SLOT(showImage(QImage&)), Qt::BlockingQueuedConnection);
-
 
     tool->moveToThread(cameraThread);
     proc->moveToThread(procThread);
+
+    QObject::connect(cameraThread, SIGNAL(started()), tool, SLOT(start()));
+    QObject::connect(tool, SIGNAL(sendMat(cv::Mat)),proc,SLOT(fullOneFrameProcess(cv::Mat)));
+    QObject::connect(proc, SIGNAL(sendImage(QImage&)),disp,SLOT(showImage(QImage&)), Qt::BlockingQueuedConnection);
+    QObject::connect(proc, SIGNAL(sendMeasResult(double,double,double)), cameraContainer, SLOT(addNewData(double,double,double)));
+}
+
+void MainWindow::createThreads() {
+    cameraThread = new QThread();
+    device1thread = new QThread();
+    device2thread = new QThread();
+    procThread = new QThread();
+
+}
+
+void MainWindow::startMeasurement() {
     procThread->start();
     cameraThread->start();
     device1thread->start();
     device2thread->start();
-
 }
 
+void MainWindow::stopMeasurement() {
+
+}
 
 void MainWindow::connectToPort(QSerialPort *port, QComboBox *box, protocol *device, int length, QString name, KeepNcalc *container) {
     int number=box->currentIndex();
