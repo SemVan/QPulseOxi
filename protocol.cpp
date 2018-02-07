@@ -104,7 +104,7 @@ void protocol::sendRequest() {
 void protocol::start() {
     elTimer = new QElapsedTimer();
     timer = new QTimer();
-    timer->setInterval(20);
+    timer->setInterval(40);
     timer->setTimerType(Qt::PreciseTimer);
     timer->setSingleShot(false);
 

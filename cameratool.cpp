@@ -51,7 +51,7 @@ void CameraTool::timeOutHandler() {
 void CameraTool::start() {
     timer = new QTimer();
     QObject::connect(timer,SIGNAL(timeout()), this, SLOT(timeOutHandler()));
-    timer->setInterval(20);
+    timer->setInterval(40);
     timer->setSingleShot(false);
     timer->setTimerType(Qt::PreciseTimer);
     timer->start();

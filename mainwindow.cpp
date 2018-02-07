@@ -24,6 +24,8 @@ MainWindow::MainWindow(QWidget *parent) :
     QString newDir = QDir::currentPath()+ui->lineEdit->text();
     qDebug()<<newDir;
     //QDir().mkdir(newDir);
+    QDateTime now = QDateTime::currentDateTime();
+    qDebug()<<now.toString("hh:mm:ss:zzz");
 
 }
 

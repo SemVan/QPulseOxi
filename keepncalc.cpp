@@ -32,7 +32,7 @@ void KeepNcalc::addNewData(double green, double blue, QDateTime shotTime) {
     //QFuture<void> future = QtConcurrent::run(this,&KeepNcalc::plotGraph,numberOfElements, blue);
     plotGraph(numberOfElements, green);
     numberOfElements++;
-    if (numberOfElements==200) {
+    if (numberOfElements==1024) {
         measurementComplete = true;
         completedMeasuring();
     }
@@ -48,7 +48,7 @@ void KeepNcalc::addNewData(double green, double blue, double red, QDateTime shot
     //QFuture<void> future = QtConcurrent::run(this,&KeepNcalc::plotGraph,numberOfElements, blue);
     plotGraph(numberOfElements, green);
     numberOfElements++;
-    if (numberOfElements==200) {
+    if (numberOfElements==1024) {
         measurementComplete = true;
         completedMeasuring();
     }
@@ -86,10 +86,11 @@ void KeepNcalc::write1Channels(QString filepath) {
     QFile data(filename);
     if(data.open(QFile::WriteOnly |QFile::Truncate)) {
         QTextStream output(&data);
-        output<<0<<","<<greenChannel.at(0)<<"\r";
+        //output<<0<<","<<greenChannel.at(0)<<"\r";
         for(int i=1; i<greenChannel.length(); i++) {
-            qint64 period = times.at(i).toMSecsSinceEpoch()-times.at(i-1).toMSecsSinceEpoch();
-            output<<period<<","<<greenChannel.at(i)<<"\r";
+            //qint64 period = times.at(i).toMSecsSinceEpoch()-times.at(i-1).toMSecsSinceEpoch();
+            QString now = times.at(i).toString("hh:mm:ss:zzz");
+            output<<now<<","<<greenChannel.at(i)<<"\r";
         }
     }
 }
@@ -99,10 +100,11 @@ void KeepNcalc::write3Channels(QString filepath) {
     QFile data(filename);
     if(data.open(QFile::WriteOnly |QFile::Truncate)) {
         QTextStream output(&data);
-        output<<0<<","<<greenChannel.at(0)<<"\r";
-        for(int i=1; i<greenChannel.length(); i++) {
-            qint64 period = times.at(i).toMSecsSinceEpoch()-times.at(i-1).toMSecsSinceEpoch();
-            output<<period<<","<<greenChannel.at(i)<<","<<blueChannel.at(i)<<","<<redChannel.at(i)<<"\r";
+        //output<<0<<","<<greenChannel.at(0)<<"\r";
+        for(int i=0; i<greenChannel.length(); i++) {
+            //qint64 period = times.at(i).toMSecsSinceEpoch()-times.at(i-1).toMSecsSinceEpoch();
+            QString now = times.at(i).toString("hh:mm:ss:zzz");
+            output<<now<<","<<greenChannel.at(i)<<","<<blueChannel.at(i)<<","<<redChannel.at(i)<<"\r";
         }
     }
 }
