@@ -1,6 +1,5 @@
 #include "keepncalc.h"
 #include <QObject>
-#include <fftw3.h>
 #include <math.h>
 #include <QtConcurrent/QtConcurrent>
 #include <QDebug>

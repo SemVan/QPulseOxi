@@ -31,9 +31,9 @@ HEADERS  += mainwindow.h \
 
 FORMS    += mainwindow.ui
 
-INCLUDEPATH += C:/Coding/fftw/
+#INCLUDEPATH += C:/Coding/fftw/
 
-LIBS +=  C:/Coding/fftw/libfftw3-3.dll
+#LIBS +=  C:/Coding/fftw/libfftw3-3.dll
 #LIBS +=  C:/Coding/FFTW/v_3.3.6/libfftw3f-3.dll
 #LIBS +=  C:/Coding/FFTW/v_3.3.6/libfftw3l-3.dll
 

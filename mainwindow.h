@@ -6,7 +6,6 @@
 #include <protocol.h>
 #include <QSerialPort>
 #include <QElapsedTimer>
-#include <fftw3.h>
 #include <fstream>
 #include <keepncalc.h>
 #include <cameratool.h>
@@ -74,7 +73,6 @@ private:
     void startMeasurement();
     void stopMeasurement();
 
-    fftw_complex *out;
     double *in;
     int currentItemNumberBlue;
     int currentItemNumberGreen;

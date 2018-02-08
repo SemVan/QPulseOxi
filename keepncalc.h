@@ -3,7 +3,6 @@
 
 #include <QVector>
 #include <QObject>
-#include <fftw3.h>
 #include <qcustomplot.h>
 #include <QDateTime>
 
