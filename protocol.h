@@ -35,6 +35,7 @@ private:
     void CommandDispatcher(QByteArray data);
     void parceAnswer(QByteArray answer);
     void parceFingerSensor(QByteArray answer);
+    void findPort();
 
 
 public slots:

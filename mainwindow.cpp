@@ -119,12 +119,37 @@ void MainWindow::initComPortsSearch() {
 
         QSerialPort currentPort;
         currentPort.setPort(portsInfo.availablePorts().at(i));
-        ui->comboBox->addItem(currentPort.portName());
-        ui->comboBox_2->addItem(currentPort.portName());
+        QSerialPortInfo info(currentPort);
+        qDebug()<<info.manufacturer();
+        qDebug()<<info.description();
+       if (info.description() == "Arduino M0 Native Port") {
+           ui->comboBox->addItem(currentPort.portName());
+       } else {
+           if ((info.description() =="XDS110 Class Application/User UART")) {
+               ui->comboBox_2->addItem(currentPort.portName());
+           }
+       }
 
     }
 }
 
+bool MainWindow::sendInfoRequest(QSerialPort &portToCheck, QString expectedAnswer) {
+    if (portToCheck.open(QIODevice::ReadWrite)) {
+        qDebug()<<portToCheck.portName();
+        portToCheck.write("i");
+        bool yesAnswer = portToCheck.waitForReadyRead(1000);
+        if (yesAnswer) {
+            Sleep(5000);
+            QByteArray answer = portToCheck.read(11);
+            portToCheck.close();
+            if (answer.toStdString() == expectedAnswer.toStdString()) {
+                return true;
+            }
+        }
+        portToCheck.close();
+        return false;
+    }
+}
 
 void MainWindow::on_pushButton_clicked()
 {
@@ -139,7 +164,7 @@ void MainWindow::initDevices() {
     connectToPort(portToConnect,ui->comboBox, pulseOxi, 7, "1pulse", contactContainer);
     connectDeviceToThread(device1thread, pulseOxi);
 
-    distMeas = new protocol("\r");
+    distMeas = new protocol("m");
     connectToPort(portToConnect_2,ui->comboBox_2, distMeas, 7,"2pulse", bezcontactContainer);
     connectDeviceToThread(device2thread, distMeas);
 

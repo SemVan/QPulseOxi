@@ -9,6 +9,11 @@ protocol::protocol(std::string mes)
     totalIncome.clear();
 }
 
+
+void protocol::findPort() {
+
+}
+
 void protocol::init(QSerialPort *y, int length, QString name) {
 
     number = 0;

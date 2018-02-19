@@ -64,7 +64,7 @@ private:
     KeepNcalc *bezcontactContainer;
     KeepNcalc *cameraContainer;
 
-
+    bool sendInfoRequest(QSerialPort &portToCheck, QString expectedAnswer);
     void setGraphParams(QCustomPlot *chart, QString xName, QString yName, QString title);
     void createAllObjects();
     void connectToPort(QSerialPort *port, QComboBox *box,protocol* device, int length, QString name, KeepNcalc *container);
