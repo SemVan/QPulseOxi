@@ -34,7 +34,10 @@ private slots:
     void someoneCompletedMeasuring();
 
 
+    void on_pushButton_3_clicked();
+
 private:
+    bool fileReading;
     QDateTime thisTime;
     QThread *device1thread;
     QThread *device2thread;
@@ -68,7 +71,12 @@ private:
     void createAllObjects();
     void connectToPort(QSerialPort *port, QComboBox *box,protocol* device, int length, QString name, KeepNcalc *container);
     void connectDeviceToThread(QThread *thr, protocol *device);
+
     void initDevices();
+    void initCameraTool();
+    void initContaclessDevice();
+    void initContactDevice();
+
     void createThreads();
     void startMeasurement();
     void stopMeasurement();
@@ -76,8 +84,15 @@ private:
     double *in;
     int currentItemNumberBlue;
     int currentItemNumberGreen;
+
+    QStringList videoFiles;
+    int filesToRead;
+    int curVideo;
+    void videoFileReadingPrepare();
+
 signals:
     void heyYouFreeze();
+    void startCamera();
 
 };
 

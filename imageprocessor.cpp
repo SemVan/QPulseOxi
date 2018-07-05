@@ -3,7 +3,7 @@
 #include <QDebug>
 #include <QElapsedTimer>
 
-#define MINIMUM_FACE_SIZE 250
+#define MINIMUM_FACE_SIZE 150
 
 ImageProcessor::ImageProcessor()
 {

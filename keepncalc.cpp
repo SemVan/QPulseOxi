@@ -28,10 +28,10 @@ void KeepNcalc::addNewData(double green, double blue, QDateTime shotTime) {
     greenChannel.append(green);
     time.append(numberOfElements);
     times.append(shotTime);
-    //QFuture<void> future = QtConcurrent::run(this,&KeepNcalc::plotGraph,numberOfElements, blue);
+
     plotGraph(numberOfElements, green);
     numberOfElements++;
-    if (numberOfElements==1024) {
+    if (numberOfElements==1100) {
         measurementComplete = true;
         completedMeasuring();
     }
@@ -44,10 +44,10 @@ void KeepNcalc::addNewData(double green, double blue, double red, QDateTime shot
     redChannel.append(red);
     time.append(numberOfElements);
     times.append(shotTime);
-    //QFuture<void> future = QtConcurrent::run(this,&KeepNcalc::plotGraph,numberOfElements, blue);
+
     plotGraph(numberOfElements, green);
     numberOfElements++;
-    if (numberOfElements==1024) {
+    if (numberOfElements==1100) {
         measurementComplete = true;
         completedMeasuring();
     }
@@ -95,6 +95,7 @@ void KeepNcalc::write1Channels(QString filepath) {
 }
 
 void KeepNcalc::write3Channels(QString filepath) {
+    //QString filename= filepath;
     QString filename= filepath+"\\"+containerName+".txt";
     QFile data(filename);
     if(data.open(QFile::WriteOnly |QFile::Truncate)) {
@@ -106,4 +107,10 @@ void KeepNcalc::write3Channels(QString filepath) {
             output<<now<<","<<greenChannel.at(i)<<","<<blueChannel.at(i)<<","<<redChannel.at(i)<<"\r";
         }
     }
+    data.close();
+}
+
+void KeepNcalc::endedFile(QString fileName) {
+    fileName.append(".txt");
+    write3Channels(fileName);
 }

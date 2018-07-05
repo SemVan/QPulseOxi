@@ -40,6 +40,7 @@ signals:
 public slots:
     void addNewData(double green, double blue, QDateTime shotTime);
     void addNewData(double green, double blue, double red, QDateTime shotTime);
+    void endedFile(QString fileName);
 
 };
 

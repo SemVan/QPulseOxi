@@ -122,10 +122,13 @@ void MainWindow::initComPortsSearch() {
         QSerialPortInfo info(currentPort);
         qDebug()<<info.manufacturer();
         qDebug()<<info.description();
-       if (info.description() == "Arduino M0 Native Port") {
+        //if (info.description() == "Arduino M0 Native Port") {
+        if(1){
            ui->comboBox->addItem(currentPort.portName());
+           ui->comboBox_2->addItem(currentPort.portName());
        } else {
-           if ((info.description() =="XDS110 Class Application/User UART")) {
+           //if ((info.description() =="XDS110 Class Application/User UART")) {
+            if(1){
                ui->comboBox_2->addItem(currentPort.portName());
            }
        }
@@ -133,42 +136,45 @@ void MainWindow::initComPortsSearch() {
     }
 }
 
-bool MainWindow::sendInfoRequest(QSerialPort &portToCheck, QString expectedAnswer) {
-    if (portToCheck.open(QIODevice::ReadWrite)) {
-        qDebug()<<portToCheck.portName();
-        portToCheck.write("i");
-        bool yesAnswer = portToCheck.waitForReadyRead(1000);
-        if (yesAnswer) {
-            Sleep(5000);
-            QByteArray answer = portToCheck.read(11);
-            portToCheck.close();
-            if (answer.toStdString() == expectedAnswer.toStdString()) {
-                return true;
-            }
-        }
-        portToCheck.close();
-        return false;
-    }
-}
 
-void MainWindow::on_pushButton_clicked()
-{
+
+void MainWindow::on_pushButton_clicked() {
     createThreads();
     initDevices();
     startMeasurement();
 
 }
 
-void MainWindow::initDevices() {
-    pulseOxi = new protocol("m");
-    connectToPort(portToConnect,ui->comboBox, pulseOxi, 7, "1pulse", contactContainer);
-    connectDeviceToThread(device1thread, pulseOxi);
+void MainWindow::initCameraTool() {
 
+}
+
+
+void MainWindow::initContaclessDevice() {
     distMeas = new protocol("m");
     connectToPort(portToConnect_2,ui->comboBox_2, distMeas, 7,"2pulse", bezcontactContainer);
     connectDeviceToThread(device2thread, distMeas);
+}
+
+
+void MainWindow::initContactDevice() {
+    pulseOxi = new protocol("m");
+    connectToPort(portToConnect,ui->comboBox, pulseOxi, 7, "1pulse", contactContainer);
+    connectDeviceToThread(device1thread, pulseOxi);
+}
+
+void MainWindow::initDevices() {
+    initContactDevice();
+    //initContactlessDevice();
+
 
     tool->moveToThread(cameraThread);
+    QString name = ui->lineEdit->text();
+    if (name == "") {
+        name = "def";
+    }
+    name.append(".avi");
+    tool->setVideoWriter(name, ui->checkBox->isChecked());
     proc->moveToThread(procThread);
 
     QObject::connect(cameraThread, SIGNAL(started()), tool, SLOT(start()));
@@ -180,9 +186,9 @@ void MainWindow::initDevices() {
 
 void MainWindow::createThreads() {
     cameraThread = new QThread();
+    procThread = new QThread();
     device1thread = new QThread();
     device2thread = new QThread();
-    procThread = new QThread();
 
 }
 
@@ -190,7 +196,7 @@ void MainWindow::startMeasurement() {
     procThread->start();
     cameraThread->start();
     device1thread->start();
-    device2thread->start();
+    //device2thread->start();
 }
 
 void MainWindow::stopMeasurement() {
@@ -226,23 +232,83 @@ void MainWindow::sliderValueChanged(int value) {
 }
 
 void MainWindow::someoneCompletedMeasuring() {
-    if (contactContainer->measurementComplete && bezcontactContainer->measurementComplete && cameraContainer->measurementComplete) {
+    //if (contactContainer->measurementComplete && bezcontactContainer->measurementComplete && cameraContainer->measurementComplete) {
+    if (contactContainer->measurementComplete  && cameraContainer->measurementComplete) {
         heyYouFreeze();
 
         QString newDir = QDir::currentPath()+"\\"+ui->lineEdit->text();
+
         qDebug()<<newDir;
         QDir().mkdir(newDir);
 
         contactContainer->write1Channels(newDir);
         contactContainer->clerContainers();
 
-        bezcontactContainer->write1Channels(newDir);
-        bezcontactContainer->clerContainers();
+        //bezcontactContainer->write1Channels(newDir);
+        //bezcontactContainer->clerContainers();
 
         cameraContainer->write3Channels(newDir);
         cameraContainer->clerContainers();
 
     }
+    if ( cameraContainer->measurementComplete && fileReading) {
+        heyYouFreeze();
+        QString subFold = videoFiles[curVideo];
+        subFold.replace(QString(".avi"), QString(""));
+        QString newDir = QDir::currentPath()+"/21.04.18/"+subFold;
+        qDebug()<<newDir;
+        //QDir().mkdir(newDir);
+        cameraContainer->write3Channels(subFold);
+        cameraContainer->clerContainers();
+        if (filesToRead != 0) {
+            ui->widget_3->graph(0)->data()->clear();
+            filesToRead--;
+            curVideo++;
+            tool->setReadFIleName(videoFiles[curVideo]);
+            emit startCamera();
+
+        }
+    }
 }
 
+void MainWindow::videoFileReadingPrepare() {
+        cameraThread = new QThread();
+        procThread = new QThread();
+        QObject::connect(cameraThread, SIGNAL(started()), tool, SLOT(start()));
+        QObject::connect(this, SIGNAL(startCamera()), tool, SLOT(start()),Qt::BlockingQueuedConnection);
+        QObject::connect(tool, SIGNAL(sendMat(cv::Mat, QDateTime)),proc,SLOT(fullOneFrameProcess(cv::Mat, QDateTime)));
+        QObject::connect(this, SIGNAL(heyYouFreeze()), tool,SLOT(stop()));
+        QObject::connect(proc, SIGNAL(sendImage(QImage&)),disp,SLOT(showImage(QImage&)), Qt::BlockingQueuedConnection);
+        QObject::connect(proc, SIGNAL(sendMeasResult(double, double, double, QDateTime)), cameraContainer, SLOT(addNewData(double, double, double, QDateTime)));
+        QObject::connect(tool, SIGNAL(fileEnded(QString)), cameraContainer, SLOT(endedFile(QString)),Qt::BlockingQueuedConnection);
+        tool->setReadFIleName(videoFiles[curVideo]);
+        tool->moveToThread(cameraThread);
+        proc->moveToThread(procThread);
+        fileReading = true;
+        procThread->start();
+        cameraThread->start();
+}
 
+void MainWindow::on_pushButton_3_clicked()
+{
+    QString curDir = QDir::currentPath();
+    curDir.append("/21.04.18");
+    QDir vidDir(curDir);
+    videoFiles.clear();
+    QStringList filesList = vidDir.entryList();
+    filesToRead = 0;
+    curVideo = 14;
+    for (int i=0; i<filesList.length(); i++) {
+        QString curFile = filesList[i];
+        if (curFile.contains(".avi")) {
+            filesToRead++;
+            QString fullFilePath = curDir+"/"+curFile;
+            videoFiles.append(fullFilePath);
+            qDebug()<<curFile;
+        }
+    }
+    filesToRead -= 14;
+    videoFileReadingPrepare();
+
+
+}

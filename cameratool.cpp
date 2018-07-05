@@ -3,7 +3,7 @@
 
 CameraTool::CameraTool(QObject *parent) : QObject(parent)
 {
-
+    doWrite = false;
 }
 
 
@@ -15,7 +15,7 @@ void CameraTool::startCamera() {
     }
     cam.set(CV_CAP_PROP_AUTO_EXPOSURE, 0.0);
     cam.set(CV_CAP_PROP_EXPOSURE, -6.0);
-    cam.set(CV_CAP_PROP_FPS, 60);
+    cam.set(CV_CAP_PROP_FPS, 30);
 
 
 }
@@ -31,8 +31,15 @@ void CameraTool::convertMatToImage(cv::Mat &frame) {
 
 void CameraTool::getImage() {
     timeShot = QDateTime::currentDateTime();
-    cam.read(img);
+    if (!cam.read(img)) {
+        fileEnded(readingFileName);
+        return;
+    }
+    if (doWrite && writer.isOpened()) {
+        writer.write(img);
+    }
     sendMat(img, timeShot);
+
 
 }
 
@@ -57,8 +64,43 @@ void CameraTool::start() {
     timer->start();
 }
 
+void CameraTool::setVideoWriter(QString name,  bool flag) {
+    if (flag) {
+        int height = cam.get(CV_CAP_PROP_FRAME_HEIGHT);
+        int width = cam.get(CV_CAP_PROP_FRAME_WIDTH);
+        int four = CV_FOURCC('M','G','P','J');
+        bool suc = writer.open(name.toStdString(), cv::VideoWriter::fourcc('M', 'J', 'P', 'G'), 30.0, cv::Size(width, height), true);
+
+        doWrite = flag;
+    }
+}
+
+
+void CameraTool::getFrameSize(int *hi, int *wi) {
+    *hi = cam.get(CV_CAP_PROP_FRAME_WIDTH);
+    *wi = cam.get(CV_CAP_PROP_FRAME_HEIGHT);
+}
+
 void CameraTool::stop() {
+    if (doWrite) {
+        doWrite = false;
+        writer.release();
+    }
     timer->stop();
+}
+
+void CameraTool::setReadFIleName(QString readFileName) {
+    readingFileName = readFileName;
+    //readFileName.append(".mov");
+    if (cam.isOpened()) {
+        cam.release();
+    }
+    cam.open(readFileName.toStdString());
+    if (cam.isOpened()) {
+        qDebug()<<"video file opened to read";
+    } else {
+        qDebug()<<"video file NOT opened to read";
+    }
 }
 
 
