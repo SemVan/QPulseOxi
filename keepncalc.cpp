@@ -28,10 +28,10 @@ void KeepNcalc::addNewData(double green, double blue, QDateTime shotTime) {
     greenChannel.append(green);
     time.append(numberOfElements);
     times.append(shotTime);
-
+    qDebug()<<containerName<<" added";
     plotGraph(numberOfElements, green);
     numberOfElements++;
-    if (numberOfElements==1100) {
+    if (numberOfElements== 1024) {
         measurementComplete = true;
         completedMeasuring();
     }
@@ -47,7 +47,7 @@ void KeepNcalc::addNewData(double green, double blue, double red, QDateTime shot
 
     plotGraph(numberOfElements, green);
     numberOfElements++;
-    if (numberOfElements==1100) {
+    if (numberOfElements==1024) {
         measurementComplete = true;
         completedMeasuring();
     }

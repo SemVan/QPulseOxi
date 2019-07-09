@@ -68,9 +68,11 @@ void MainWindow::initGraphsAndDataContents() {
     contactContainer=new KeepNcalc();
     contactContainer->init(ui->widget,0, "Contact");
     QObject::connect(contactContainer, SIGNAL(completedMeasuring()), this, SLOT(someoneCompletedMeasuring()));
+
     bezcontactContainer=new KeepNcalc();
     bezcontactContainer->init(ui->widget_2,0, "Contactless");
     QObject::connect(bezcontactContainer, SIGNAL(completedMeasuring()), this, SLOT(someoneCompletedMeasuring()));
+
     cameraContainer = new KeepNcalc();
     cameraContainer->init(ui->widget_3, 0, "Video");
     QObject::connect(cameraContainer, SIGNAL(completedMeasuring()), this, SLOT(someoneCompletedMeasuring()));
@@ -132,6 +134,8 @@ void MainWindow::initComPortsSearch() {
                ui->comboBox_2->addItem(currentPort.portName());
            }
        }
+         ui->comboBox->setCurrentIndex(0);
+         ui->comboBox_2->setCurrentIndex(1);
 
     }
 }
@@ -165,7 +169,7 @@ void MainWindow::initContactDevice() {
 
 void MainWindow::initDevices() {
     initContactDevice();
-    //initContactlessDevice();
+    initContaclessDevice();
 
 
     tool->moveToThread(cameraThread);
@@ -196,7 +200,7 @@ void MainWindow::startMeasurement() {
     procThread->start();
     cameraThread->start();
     device1thread->start();
-    //device2thread->start();
+    device2thread->start();
 }
 
 void MainWindow::stopMeasurement() {
@@ -232,8 +236,8 @@ void MainWindow::sliderValueChanged(int value) {
 }
 
 void MainWindow::someoneCompletedMeasuring() {
-    //if (contactContainer->measurementComplete && bezcontactContainer->measurementComplete && cameraContainer->measurementComplete) {
-    if (contactContainer->measurementComplete  && cameraContainer->measurementComplete) {
+    if (contactContainer->measurementComplete && bezcontactContainer->measurementComplete && cameraContainer->measurementComplete) {
+    //if (contactContainer->measurementComplete  && cameraContainer->measurementComplete) {
         heyYouFreeze();
 
         QString newDir = QDir::currentPath()+"\\"+ui->lineEdit->text();
@@ -244,8 +248,8 @@ void MainWindow::someoneCompletedMeasuring() {
         contactContainer->write1Channels(newDir);
         contactContainer->clerContainers();
 
-        //bezcontactContainer->write1Channels(newDir);
-        //bezcontactContainer->clerContainers();
+        bezcontactContainer->write1Channels(newDir);
+        bezcontactContainer->clerContainers();
 
         cameraContainer->write3Channels(newDir);
         cameraContainer->clerContainers();
@@ -255,7 +259,7 @@ void MainWindow::someoneCompletedMeasuring() {
         heyYouFreeze();
         QString subFold = videoFiles[curVideo];
         subFold.replace(QString(".avi"), QString(""));
-        QString newDir = QDir::currentPath()+"/21.04.18/"+subFold;
+        QString newDir = QDir::currentPath()+"/13.02.19/"+subFold;
         qDebug()<<newDir;
         //QDir().mkdir(newDir);
         cameraContainer->write3Channels(subFold);
@@ -292,7 +296,7 @@ void MainWindow::videoFileReadingPrepare() {
 void MainWindow::on_pushButton_3_clicked()
 {
     QString curDir = QDir::currentPath();
-    curDir.append("/21.04.18");
+    curDir.append("/27.04.18");
     QDir vidDir(curDir);
     videoFiles.clear();
     QStringList filesList = vidDir.entryList();

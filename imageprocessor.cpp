@@ -39,7 +39,7 @@ void ImageProcessor::detectFace(cv::Mat &frame) {
         face_y = faces[0].y;
         face_r = faces[0].width;
         face = frame(faces[0]);
-        face = findSkinRegions(face);
+        //face = findSkinRegions(face);
         calculateAverage(face);
         cv::Point center( faces[0].x + faces[0].width*0.5, faces[0].y + faces[0].height*0.5 );
         cv::ellipse( frame, center, cv::Size( faces[0].width*0.5, faces[0].height*0.5), 0, 0, 360, cv::Scalar( 255, 0, 255 ), 4, 8, 0 );
