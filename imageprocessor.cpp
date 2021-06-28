@@ -17,6 +17,7 @@ void ImageProcessor::init(KeepNcalc *cont) {
 
 
 void ImageProcessor::fullOneFrameProcess(cv::Mat frame, QDateTime time) {
+    qDebug() << "image is here";
     shotTime = time;
     detectFace(frame);
 }
@@ -25,28 +26,28 @@ void ImageProcessor::detectFace(cv::Mat &frame) {
 
     QElapsedTimer elTimer;
     elTimer.start();
-    cv::Mat face;
-    std::vector<cv::Rect> faces;
+    cv::Mat face = frame;
+//    std::vector<cv::Rect> faces;
 
-    if (faceHaarCascade.empty()) {
-        return;
-    }
+//    if (faceHaarCascade.empty()) {
+//        return;
+//    }
 
-    faceHaarCascade.detectMultiScale( frame, faces, 1.1, 2, 0|CV_HAAR_SCALE_IMAGE, cv::Size(MINIMUM_FACE_SIZE, MINIMUM_FACE_SIZE) );
+//    faceHaarCascade.detectMultiScale( frame, faces, 1.1, 2, 0|CV_HAAR_SCALE_IMAGE, cv::Size(MINIMUM_FACE_SIZE, MINIMUM_FACE_SIZE) );
 
-    if (faces.size()) {
-        face_x = faces[0].x;
-        face_y = faces[0].y;
-        face_r = faces[0].width;
-        face = frame(faces[0]);
-        //face = findSkinRegions(face);
-        calculateAverage(face);
-        cv::Point center( faces[0].x + faces[0].width*0.5, faces[0].y + faces[0].height*0.5 );
-        cv::ellipse( frame, center, cv::Size( faces[0].width*0.5, faces[0].height*0.5), 0, 0, 360, cv::Scalar( 255, 0, 255 ), 4, 8, 0 );
-     } else {
-        face = frame;
-        qDebug()<<"no face";
-    }
+//    if (faces.size()) {
+//        face_x = faces[0].x;
+//        face_y = faces[0].y;
+//        face_r = faces[0].width;
+//        face = frame(faces[0]);
+//        //face = findSkinRegions(face);
+//        calculateAverage(face);
+//        cv::Point center( faces[0].x + faces[0].width*0.5, faces[0].y + faces[0].height*0.5 );
+//        cv::ellipse( frame, center, cv::Size( faces[0].width*0.5, faces[0].height*0.5), 0, 0, 360, cv::Scalar( 255, 0, 255 ), 4, 8, 0 );
+//     } else {
+//        face = frame;
+//        qDebug()<<"no face";
+//    }
 
     qDebug()<<"full frame procedure"<<elTimer.elapsed();
     convertMatToImage(face);
