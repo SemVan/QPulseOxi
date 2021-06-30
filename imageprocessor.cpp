@@ -17,7 +17,6 @@ void ImageProcessor::init(KeepNcalc *cont) {
 
 
 void ImageProcessor::fullOneFrameProcess(cv::Mat frame, QDateTime time) {
-    qDebug() << "image is here";
     shotTime = time;
     detectFace(frame);
 }
@@ -49,7 +48,8 @@ void ImageProcessor::detectFace(cv::Mat &frame) {
 //        qDebug()<<"no face";
 //    }
 
-    qDebug()<<"full frame procedure"<<elTimer.elapsed();
+//    qDebug()<<"full frame procedure"<<elTimer.elapsed();
+    sendMeasResult(0, 0, 0, shotTime);
     convertMatToImage(face);
 }
 

@@ -11,7 +11,6 @@ displayer::displayer(QObject *parent)
 
 void displayer::init(QGraphicsView *v) {
     scene  = new QGraphicsScene();
-    qDebug()<<"display init";
     view = v;
 }
 

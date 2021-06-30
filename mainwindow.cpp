@@ -62,8 +62,8 @@ void MainWindow::initGraphsAndDataContents() {
     ui->horizontalSlider->setMaximum(-1);
     ui->horizontalSlider->setMinimum(-15);
     QObject::connect(ui->horizontalSlider, SIGNAL(valueChanged(int)), this, SLOT(sliderValueChanged(int)));
-    ui->horizontalSlider->setValue(-6);
-    tool->setExposure(-6);
+    ui->horizontalSlider->setValue(-7);
+    tool->setExposure(-7);
 
     contactContainer=new KeepNcalc();
     contactContainer->init(ui->widget,0, "Contact");
@@ -156,7 +156,7 @@ void MainWindow::initCameraTool() {
 
 void MainWindow::initContaclessDevice() {
     distMeas = new protocol("m");
-    connectToPort(portToConnect_2,ui->comboBox_2, distMeas, 7,"2pulse", bezcontactContainer);
+    connectToPort(portToConnect_2,ui->comboBox_2, distMeas, 7, "2pulse", bezcontactContainer);
     connectDeviceToThread(device2thread, distMeas);
 }
 
@@ -169,7 +169,7 @@ void MainWindow::initContactDevice() {
 
 void MainWindow::initDevices() {
     initContactDevice();
-    initContaclessDevice();
+//    initContaclessDevice();
 
 
     tool->moveToThread(cameraThread);
@@ -182,9 +182,9 @@ void MainWindow::initDevices() {
     proc->moveToThread(procThread);
 
     QObject::connect(cameraThread, SIGNAL(started()), tool, SLOT(start()));
-    QObject::connect(tool, SIGNAL(sendMat(cv::Mat, QDateTime)),proc,SLOT(fullOneFrameProcess(cv::Mat, QDateTime)));
-    QObject::connect(this, SIGNAL(heyYouFreeze()), tool,SLOT(stop()));
-    QObject::connect(proc, SIGNAL(sendImage(QImage&)),disp,SLOT(showImage(QImage&)), Qt::BlockingQueuedConnection);
+    QObject::connect(tool, SIGNAL(sendMat(cv::Mat, QDateTime)), proc, SLOT(fullOneFrameProcess(cv::Mat, QDateTime)));
+    QObject::connect(this, SIGNAL(stop_camera()), tool, SLOT(stop()));
+    QObject::connect(proc, SIGNAL(sendImage(QImage&)), disp, SLOT(showImage(QImage&)), Qt::BlockingQueuedConnection);
     QObject::connect(proc, SIGNAL(sendMeasResult(double, double, double, QDateTime)), cameraContainer, SLOT(addNewData(double, double, double, QDateTime)));
 }
 
@@ -192,15 +192,16 @@ void MainWindow::createThreads() {
     cameraThread = new QThread();
     procThread = new QThread();
     device1thread = new QThread();
-    device2thread = new QThread();
+//    device2thread = new QThread();
 
 }
 
 void MainWindow::startMeasurement() {
+    tool->setExposure(-7);
     procThread->start();
-    cameraThread->start();
     device1thread->start();
-    device2thread->start();
+    cameraThread->start();
+//    device2thread->start();
 }
 
 void MainWindow::stopMeasurement() {
@@ -219,7 +220,7 @@ void MainWindow::connectToPort(QSerialPort *port, QComboBox *box, protocol *devi
     } else {
         device->init(port, length, name);
         QObject::connect(device, SIGNAL(sendMeasResult(double, double, QDateTime)), container, SLOT(addNewData(double, double, QDateTime)));
-        QObject::connect(this, SIGNAL(heyYouFreeze()), device,SLOT(stop()));
+        QObject::connect(this, SIGNAL(stop_device()), device, SLOT(stop()));
     }
 }
 
@@ -236,14 +237,25 @@ void MainWindow::sliderValueChanged(int value) {
 }
 
 void MainWindow::someoneCompletedMeasuring() {
-    if (contactContainer->measurementComplete && bezcontactContainer->measurementComplete && cameraContainer->measurementComplete) {
-    //if (contactContainer->measurementComplete  && cameraContainer->measurementComplete) {
-        heyYouFreeze();
+    qDebug() << "someone completed measurement";
+    if (contactContainer->measurementComplete) {
+        qDebug() << "device measurement completed";
+        emit stop_device();
+    }
+    if (cameraContainer->measurementComplete) {
+        qDebug() << "camera measurement completed";
+        emit stop_camera();
+    }
 
+
+
+    if (contactContainer->measurementComplete &&cameraContainer->measurementComplete) {
+        qDebug() << "full measurement completed";
         QString newDir = QDir::currentPath()+"\\"+ui->lineEdit->text();
 
         qDebug()<<newDir;
         QDir().mkdir(newDir);
+
 
         contactContainer->write1Channels(newDir);
         contactContainer->clerContainers();
@@ -255,24 +267,24 @@ void MainWindow::someoneCompletedMeasuring() {
         cameraContainer->clerContainers();
 
     }
-    if ( cameraContainer->measurementComplete && fileReading) {
-        heyYouFreeze();
-        QString subFold = videoFiles[curVideo];
-        subFold.replace(QString(".avi"), QString(""));
-        QString newDir = QDir::currentPath()+"/13.02.19/"+subFold;
-        qDebug()<<newDir;
-        //QDir().mkdir(newDir);
-        cameraContainer->write3Channels(subFold);
-        cameraContainer->clerContainers();
-        if (filesToRead != 0) {
-            ui->widget_3->graph(0)->data()->clear();
-            filesToRead--;
-            curVideo++;
-            tool->setReadFIleName(videoFiles[curVideo]);
-            emit startCamera();
+//    if ( cameraContainer->measurementComplete && fileReading) {
+//        heyYouFreeze();
+//        QString subFold = videoFiles[curVideo];
+//        subFold.replace(QString(".avi"), QString(""));
+//        QString newDir = QDir::currentPath()+"/13.02.19/"+subFold;
+//        qDebug()<<newDir;
+//        //QDir().mkdir(newDir);
+//        cameraContainer->write3Channels(subFold);
+//        cameraContainer->clerContainers();
+//        if (filesToRead != 0) {
+//            ui->widget_3->graph(0)->data()->clear();
+//            filesToRead--;
+//            curVideo++;
+//            tool->setReadFIleName(videoFiles[curVideo]);
+//            emit startCamera();
 
-        }
-    }
+//        }
+//    }
 }
 
 void MainWindow::videoFileReadingPrepare() {
@@ -313,6 +325,4 @@ void MainWindow::on_pushButton_3_clicked()
     }
     filesToRead -= 14;
     videoFileReadingPrepare();
-
-
 }

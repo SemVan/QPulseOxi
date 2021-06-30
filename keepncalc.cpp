@@ -23,33 +23,41 @@ void KeepNcalc::init(QCustomPlot *chart, int number, QString name) {
     containerName = name;
 }
 
+
+int KeepNcalc::get_container_length() {
+    return greenChannel.length();
+}
+
 void KeepNcalc::addNewData(double green, double blue, QDateTime shotTime) {
-    blueChannel.append(blue);
-    greenChannel.append(green);
-    time.append(numberOfElements);
-    times.append(shotTime);
-    qDebug()<<containerName<<" added";
-    plotGraph(numberOfElements, green);
-    numberOfElements++;
-    if (numberOfElements== 1024) {
-        measurementComplete = true;
-        completedMeasuring();
+    if (get_container_length() < measurement_length) {
+        blueChannel.append(blue);
+        greenChannel.append(green);
+        time.append(numberOfElements);
+        times.append(shotTime);
+        plotGraph(numberOfElements, green);
+        numberOfElements++;
+        if (numberOfElements == measurement_length) {
+            measurementComplete = true;
+            completedMeasuring();
+        }
     }
 }
 
 
 void KeepNcalc::addNewData(double green, double blue, double red, QDateTime shotTime) {
-    blueChannel.append(blue);
-    greenChannel.append(green);
-    redChannel.append(red);
-    time.append(numberOfElements);
-    times.append(shotTime);
+    if (get_container_length() <= measurement_length) {
+        blueChannel.append(blue);
+        greenChannel.append(green);
+        redChannel.append(red);
+        time.append(numberOfElements);
+        times.append(shotTime);
 
-    plotGraph(numberOfElements, green);
-    numberOfElements++;
-    if (numberOfElements==1024) {
-        measurementComplete = true;
-        completedMeasuring();
+        plotGraph(numberOfElements, green);
+        numberOfElements++;
+        if (numberOfElements == measurement_length) {
+            measurementComplete = true;
+            completedMeasuring();
+        }
     }
 }
 

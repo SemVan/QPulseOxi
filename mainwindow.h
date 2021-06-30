@@ -92,6 +92,8 @@ private:
 
 signals:
     void heyYouFreeze();
+    void stop_camera();
+    void stop_device();
     void startCamera();
 
 };

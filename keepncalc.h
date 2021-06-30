@@ -18,6 +18,7 @@ public:
     bool measurementComplete;
     void write1Channels(QString filepath);
     void write3Channels(QString filepath);
+    int get_container_length();
 
 private:
     QString containerName;
@@ -31,6 +32,7 @@ private:
     double max;
     double min;
     int numberOfElements;
+    const int measurement_length = 128;
 
 
 

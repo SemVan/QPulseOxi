@@ -30,12 +30,13 @@ void protocol::init(QSerialPort *y, int length, QString name) {
     connect(portUSB, &QSerialPort::readyRead, this, &protocol::getData);
 }
 
+
 /*!
  * \brief protocol::getData Gets one full MC reply (ended with CR) from buffer
  */
-void protocol::getData()
-{
+void protocol::getData(){
     int quan=portUSB->bytesAvailable();
+    qDebug() << "something came";
     if((portUSB->isOpen())&&(quan>0)) {
         //int quan=portUSB->bytesAvailable();
         //unsigned char incomeChar[quan];
@@ -45,22 +46,21 @@ void protocol::getData()
         int freeSpaceInBuffer=256-totalIncome.size();
 
         if (freeSpaceInBuffer>=quan) {
-            totalIncome.append(incomeChar,quan);
+            totalIncome.append(incomeChar, quan);
         } else {
-            totalIncome.append(incomeChar,freeSpaceInBuffer);
+            totalIncome.append(incomeChar, freeSpaceInBuffer);
         }
 
     }
 
     if (totalIncome.size()>0) {
-        if (totalIncome.at(totalIncome.size()-1)==13) {
+        if (totalIncome.at(totalIncome.size()-1 ) == 13) {
             parceAnswer(totalIncome);
             totalIncome.clear();
         }
-
     }
-
 }
+
 
 /*!
  * \brief protocol::parceAnswer Parces MC reply and calls further functions to handle it
@@ -69,14 +69,14 @@ void protocol::getData()
 void protocol::parceAnswer(QByteArray answer) {
 
      if (answer.size() == MESSAGE_LENGTH) {
-        QString blue=answer.mid(0,3);
-        QString green=answer.mid(3,3);
+        QString blue=answer.mid(0, 3);
+        QString green=answer.mid(3, 3);
 
         bool okBlue;
         bool okGreen;
 
-        int resultBlue=blue.toInt(&okBlue,16);
-        int resultGreen=green.toInt(&okGreen,16);
+        int resultBlue=blue.toInt(&okBlue, 16);
+        int resultGreen=green.toInt(&okGreen, 16);
 
         if (okBlue && okGreen) {
             qDebug()<<number<<"got from device";
@@ -119,6 +119,6 @@ void protocol::start() {
 }
 
 void protocol::stop() {
-
+    qDebug() << "stopping device";
     timer->stop();
 }
