@@ -49,7 +49,7 @@ void ImageProcessor::detectFace(cv::Mat &frame) {
 //    }
 
 //    qDebug()<<"full frame procedure"<<elTimer.elapsed();
-    sendMeasResult(0, 0, 0, shotTime);
+    emit sendMeasResult(0, 0, 0, shotTime);
     convertMatToImage(face);
 }
 

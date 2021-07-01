@@ -32,7 +32,7 @@ private:
     double max;
     double min;
     int numberOfElements;
-    const int measurement_length = 128;
+    const int measurement_length = 1024;
 
 
 

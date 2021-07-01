@@ -200,6 +200,7 @@ void MainWindow::startMeasurement() {
     tool->setExposure(-7);
     procThread->start();
     device1thread->start();
+    QThread::msleep(200);
     cameraThread->start();
 //    device2thread->start();
 }
